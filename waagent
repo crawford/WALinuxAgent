@@ -581,6 +581,12 @@ class AbstractDistro(object):
         """
         return data
 
+    def notifyProvisioned(self):
+        """
+        Notify the system that the provisioning has successfully completed.
+        """
+        SetFileContents(LibDir + "/provisioned", "")
+
 ############################################################
 #	GentooDistro
 ############################################################
@@ -1106,6 +1112,9 @@ class CoreOSDistro(AbstractDistro):
 
     def translateCustomData(self, data):
         return base64.b64decode(data)
+
+    def notifyProvisioned(self):
+        Run("systemd-notify --ready --pid=" + str(os.getpid()), chk_err=False)
 
 ############################################################    
 #	debianDistro
@@ -4800,7 +4809,7 @@ class Agent(Util):
                     provisionError = self.Provision()
                     if provisionError == None :
                         provisioned = True
-                        SetFileContents(LibDir + "/provisioned", "")
+                        MyDistro.notifyProvisioned()
 
                 #
                 # only one port supported
